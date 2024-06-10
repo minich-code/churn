@@ -20,15 +20,6 @@ class DataValidation:
             if missing_columns or extra_columns:
                 validation_status = False
 
-            validation_results = {
-                "column_validation_status": validation_status,
-                "missing_columns": missing_columns,
-                "extra_columns": extra_columns
-            }
-
-            with open(self.config.STATUS_FILE, 'w') as f:
-                json.dump(validation_results, f, indent=4)
-
             return validation_status
 
         except Exception as e:
@@ -47,14 +38,6 @@ class DataValidation:
                         type_mismatches[col] = (expected_type, actual_type)
                         validation_status = False
 
-            validation_results = {
-                "data_type_validation_status": validation_status,
-                "type_mismatches": type_mismatches
-            }
-
-            with open(self.config.STATUS_FILE, 'w') as f:
-                json.dump(validation_results, f, indent=4)
-
             return validation_status
 
         except Exception as e:
@@ -69,14 +52,6 @@ class DataValidation:
                 if data[col].isnull().sum() > 0:
                     missing_values[col] = data[col].isnull().sum()
                     validation_status = False
-
-            validation_results = {
-                "missing_values_validation_status": validation_status,
-                "missing_values": missing_values
-            }
-
-            with open(self.config.STATUS_FILE, 'w') as f:
-                json.dump(validation_results, f, indent=4)
 
             return validation_status
 

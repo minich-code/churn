@@ -2,6 +2,7 @@ from src.churn.config.configuration import ConfigurationManager
 from src.churn.components.c_02_data_validation import DataValidation
 from src.churn import logging
 import pandas as pd 
+import json
 
 PIPELINE_NAME = "DATA VALIDATION PIPELINE"
 
@@ -28,6 +29,17 @@ class DataValidationPipeline:
 
         # Perform missing values validation
         missing_values_status = data_validation.validate_missing_values(data)
+
+        # Create a dictionary with the validation results
+        validation_results = {
+            "validate_all_columns": column_validation_status,
+            "validate_data_types": type_validation_status,
+            "validate_missing_values": missing_values_status
+        }
+
+        # Save the results to the JSON file
+        with open(data_validation_config.STATUS_FILE, 'w') as f:
+            json.dump(validation_results, f, indent=4)
 
         overall_validation_status = (column_validation_status and type_validation_status and 
                                      missing_values_status)

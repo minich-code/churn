@@ -70,15 +70,6 @@ class DataValidation:
             if missing_columns or extra_columns:
                 validation_status = False
 
-            validation_results = {
-                "column_validation_status": validation_status,
-                "missing_columns": missing_columns,
-                "extra_columns": extra_columns
-            }
-
-            with open(self.config.STATUS_FILE, 'w') as f:
-                json.dump(validation_results, f, indent=4)
-
             return validation_status
 
         except Exception as e:
@@ -97,14 +88,6 @@ class DataValidation:
                         type_mismatches[col] = (expected_type, actual_type)
                         validation_status = False
 
-            validation_results = {
-                "data_type_validation_status": validation_status,
-                "type_mismatches": type_mismatches
-            }
-
-            with open(self.config.STATUS_FILE, 'w') as f:
-                json.dump(validation_results, f, indent=4)
-
             return validation_status
 
         except Exception as e:
@@ -119,14 +102,6 @@ class DataValidation:
                 if data[col].isnull().sum() > 0:
                     missing_values[col] = data[col].isnull().sum()
                     validation_status = False
-
-            validation_results = {
-                "missing_values_validation_status": validation_status,
-                "missing_values": missing_values
-            }
-
-            with open(self.config.STATUS_FILE, 'w') as f:
-                json.dump(validation_results, f, indent=4)
 
             return validation_status
 
@@ -156,6 +131,17 @@ if __name__ == "__main__":
 
         # Perform missing values validation
         missing_values_status = data_validation.validate_missing_values(data)
+
+        # Create a dictionary with the validation results
+        validation_results = {
+            "validate_all_columns": column_validation_status,
+            "validate_data_types": type_validation_status,
+            "validate_missing_values": missing_values_status
+        }
+
+        # Save the results to the JSON file
+        with open(data_validation_config.STATUS_FILE, 'w') as f:
+            json.dump(validation_results, f, indent=4)
 
         overall_validation_status = (column_validation_status and type_validation_status and 
                                      missing_values_status)

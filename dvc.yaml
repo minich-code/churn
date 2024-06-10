@@ -1,22 +1,38 @@
 stages: 
   data_ingestion:
-    cmd: python src\churn\pipelines\pip_01_data_ingestion.py
+    cmd: python src/churn/pipelines/pip_01_data_ingestion.py
 
     deps: 
-      - python src\churn\pipelines\pip_01_data_ingestion.py
+      - src/churn/pipelines/pip_01_data_ingestion.py
       - config/config.yaml
   
     outs:
-      - artifacts\data_ingestion\web_churn.csv
+      - artifacts/data_ingestion/web_churn.csv
       
   data_validation:
-    cmd: src\churn\pipelines\pip_02_data_validation.py
-
+    cmd: python src/churn/pipelines/pip_02_data_validation.py
     
     deps: 
-      - src\churn\pipelines\pip_02_data_validation.py
+      - src/churn/pipelines/pip_02_data_validation.py
       - config/config.yaml
-      - artifacts\data_ingestion\web_churn.csv
+      - artifacts/data_ingestion/web_churn.csv
   
     outs:
-      - artifacts\data_validation\status.json
+      - artifacts/data_validation/status.json
+
+  data_transformation:
+    cmd: python src/churn/pipelines/pip_03_data_transformation.py
+
+    deps: 
+      - src/churn/pipelines/pip_03_data_transformation.py
+      - config/config.yaml
+      - artifacts/data_validation/status.json 
+
+    outs:
+      - artifacts/data_transformation/preprocessor_obj.joblib
+      - artifacts/data_transformation/X_test_transformed.joblib
+      - artifacts/data_transformation/X_train_transformed.joblib
+      - artifacts/data_transformation/X_val_transformed.joblib
+      - artifacts/data_transformation/y_test.csv
+      - artifacts/data_transformation/y_train.csv
+      - artifacts/data_transformation/y_val.csv

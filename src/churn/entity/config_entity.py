@@ -16,6 +16,7 @@ class DataIngestionConfig:
     batch_size: int = 10000  # Batch size for batch processing
 
 
+# Data validation entity
 @dataclass
 class DataValidationConfig:
     root_dir: Path
@@ -23,3 +24,13 @@ class DataValidationConfig:
     data_dir: Path
     all_schema: dict
     critical_columns: list  # List of critical columns for missing value checks
+
+
+# Data transformation entity
+@dataclass
+class DataTransformationConfig:
+    root_dir: Path
+    data_path: Path
+    numerical_cols: list
+    categorical_cols: list
+

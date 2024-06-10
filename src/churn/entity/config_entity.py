@@ -57,3 +57,26 @@ class ModelTrainerConfig:
     random_state: int
     min_child_samples: int
 
+# Model Evaluation Entity
+
+@dataclass
+class ModelEvaluationConfig:
+    root_dir: Path
+    test_data_path: Path
+    test_target_variable: Path
+    model_path: Path
+    all_params: dict
+    metric_file_name: Path
+    target_column: str
+
+
+# Model Validation
+@dataclass
+class ModelValidationConfig:
+    root_dir: Path
+    model_path: Path
+    test_data_path: Path
+    test_target_variable: Path
+    metric_file_name: Path
+    target_column: str  
+

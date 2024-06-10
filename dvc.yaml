@@ -26,13 +26,42 @@ stages:
     deps: 
       - src/churn/pipelines/pip_03_data_transformation.py
       - config/config.yaml
-      - artifacts/data_validation/status.json 
+      #- artifacts/data_validation/status.json 
 
     outs:
       - artifacts/data_transformation/preprocessor_obj.joblib
-      - artifacts/data_transformation/X_test_transformed.joblib
       - artifacts/data_transformation/X_train_transformed.joblib
       - artifacts/data_transformation/X_val_transformed.joblib
-      - artifacts/data_transformation/y_test.csv
+      - artifacts/data_transformation/X_test_transformed.joblib
       - artifacts/data_transformation/y_train.csv
       - artifacts/data_transformation/y_val.csv
+      - artifacts/data_transformation/y_test.csv
+
+  model_training:
+    cmd: python src/churn/pipelines/pip_04_model_trainer.py
+
+    deps: 
+      - src/churn/pipelines/pip_04_model_trainer.py
+      - config/config.yaml
+      - artifacts/data_transformation/X_train_transformed.joblib
+      - artifacts/data_transformation/y_train.csv
+
+    params: 
+      - boosting_type
+      - max_depth
+      - learning_rate
+      - n_estimators
+      - objective
+      - min_split_gain
+      - min_child_weight
+      - subsample
+      - colsample_bytree
+      - reg_alpha
+      - reg_lambda
+      - random_state
+      - min_child_samples
+
+   
+    outs:
+      - artifacts/model_trainer/model.joblib
+      

@@ -100,6 +100,13 @@ class DataTransformation:
             preprocessor_path = os.path.join(self.config.root_dir, "preprocessor_obj.joblib")
             save_object(obj=preprocessor_obj, file_path=preprocessor_path)
 
+            # Save the preprocessing object
+            preprocessor_path = os.path.join(self.config.root_dir, "preprocessor_obj.joblib")
+
+            logging.info(f"Saving preprocessor object to {preprocessor_path}")
+            save_object(obj=preprocessor_obj, file_path=preprocessor_path)
+            logging.info("Preprocessor object saved successfully")
+
             # Save the transformed data
             X_train_transformed_path = os.path.join(self.config.root_dir, "X_train_transformed.joblib")
             X_val_transformed_path = os.path.join(self.config.root_dir, "X_val_transformed.joblib")
@@ -111,7 +118,7 @@ class DataTransformation:
             logging.info("Data Transformation process has completed")
 
             # Return
-            return X_train_transformed, X_val_transformed, X_test_transformed, y_train, y_val, y_test #, preprocessor_path
+            return X_train_transformed, X_val_transformed, X_test_transformed, y_train, y_val, y_test, preprocessor_path
 
         except Exception as e:
             raise e

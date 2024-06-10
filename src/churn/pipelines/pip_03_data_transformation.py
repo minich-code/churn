@@ -41,7 +41,7 @@ class DataTransformationPipeline:
                 X_train, X_val, X_test, y_train, y_val, y_test = data_transformation.train_val_test_splitting()
                 
                 # Unpack the transformed data
-                X_train_transformed, X_val_transformed, X_test_transformed, y_train, y_val, y_test = \
+                X_train_transformed, X_val_transformed, X_test_transformed, y_train, y_val, y_test, preprocessor_path = \
                     data_transformation.initiate_data_transformation(X_train, X_val, X_test, y_train, y_val, y_test)
                 
                          

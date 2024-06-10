@@ -1,0 +1,11 @@
+stages: 
+  data_ingestion:
+    cmd: python src\churn\pipelines\pip_01_data_ingestion.py
+
+    deps: 
+      - python src\churn\pipelines\pip_01_data_ingestion.py
+      - config/config.yaml
+  
+    outs:
+      - artifacts\data_ingestion\web_churn.csv
+      

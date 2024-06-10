@@ -28,7 +28,7 @@ list_of_files = [
     f"src/{package_name}/pipelines/pip_05_model_evaluation.py",
     f"src/{package_name}/pipelines/pip_06_prediction_pipeline.py",
     f"src/{package_name}/entity/__init__.py",
-    f"src/{package_name}/entity/configuration_entity.py",
+    f"src/{package_name}/entity/config_entity.py",
     f"src/{package_name}/constants/__init__.py",
     f"src/{package_name}/exception.py",
     f"src/{package_name}/logger.py",

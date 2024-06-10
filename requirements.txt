@@ -18,6 +18,7 @@ streamlit
 ipykernel
 pip-chill==1.0.1
 LightGBM
+category_encoders
 
 # mlflow 
 mlflow

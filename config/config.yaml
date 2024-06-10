@@ -1,0 +1,94 @@
+artifacts_root: artifacts
+
+
+data_ingestion:
+  root_dir: artifacts/data_ingestion 
+  mongo_uri: mongodb+srv://Minich:Mydatabase.456@minich-data-repository.gzlkk1s.mongodb.net/
+  database_name: churn
+  collection_name: transformed_web_churn
+
+
+data_validation:
+  root_dir: artifacts/data_validation
+  data_dir: artifacts/data_ingestion/web_churn.csv
+  STATUS_FILE: artifacts/data_validation/status.json
+  critical_columns: 
+    - 'age'
+    - 'gender'
+    - 'region_category'
+    - 'membership_category'
+    - 'joined_through_referral'
+    - 'preferred_offer_types'
+    - 'internet_option'
+    - 'Recency'
+    - 'avg_time_spent'
+    - 'Monetary'
+    - 'Frequency'
+    - 'points_in_wallet' 
+    - 'used_special_discount'
+    - 'offer_application_preference'
+    - 'past_complaint'
+    - 'complaint_status'
+    - 'feedback'
+    - 'churn_risk_score'
+    - 'medium_of_operation'
+    - 'tenure_months'
+    - 'visit_hour' 
+    - 'Login-Spend Ratio'
+    - 'Login-Transaction Ratio'
+
+
+data_transformation:
+  root_dir: artifacts/data_transformation
+  data_path: artifacts/data_ingestion/web_churn.csv
+  numerical_cols:
+    - 'age'
+    - 'Recency'
+    - 'avg_time_spent'
+    - 'Monetary'
+    - 'Frequency'
+    - 'points_in_wallet' 
+    - 'tenure_months'
+    - 'visit_hour' 
+    - 'Login-Spend Ratio'
+    - 'Login-Transaction Ratio'
+      
+                 
+  categorical_cols:
+    - 'gender'
+    - 'region_category'
+    - 'membership_category'
+    - 'joined_through_referral'
+    - 'preferred_offer_types'
+    - 'internet_option'
+    - 'used_special_discount'
+    - 'offer_application_preference'
+    - 'past_complaint'
+    - 'complaint_status'
+    - 'feedback'
+    - 'medium_of_operation'
+
+
+model_trainer:
+  root_dir: artifacts/model_trainer
+  train_data_path: artifacts\data_transformation\ X_train_transformed.joblib
+  val_data_path: artifacts\data_transformation\X_val_transformed.joblib
+  #y_train_data_path: artifacts/data_transformation/y_train_arr.npy
+  #y_test_data_path: artifacts/data_transformation/y_test_arr.npy
+  model_name: model.joblib
+
+
+model_evaluation:
+  root_dir: artifacts/model_evaluation
+  test_data_path: artifacts\data_transformation\X_val_transformed.joblib
+  test_target_variable: artifacts\data_transformation\y_val.csv
+  model_path: artifacts/model_trainer/model.joblib
+  metric_file_name: artifacts/model_evaluation/metrics.json
+
+model_validation: 
+  
+  root_dir: artifacts/model_validation
+  model_path: artifacts/model_trainer/model.joblib
+  test_data_path: artifacts\data_transformation\X_test_transformed.joblib
+  test_target_variable: artifacts\data_transformation\y_test.csv
+  metric_file_name: artifacts/model_validation/metrics.json

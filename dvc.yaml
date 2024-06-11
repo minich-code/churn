@@ -1,67 +1,50 @@
-stages: 
+---
+stages:
   data_ingestion:
     cmd: python src/churn/pipelines/pip_01_data_ingestion.py
-
-    deps: 
+    deps:
       - src/churn/pipelines/pip_01_data_ingestion.py
       - config/config.yaml
-  
     outs:
       - artifacts/data_ingestion/web_churn.csv
-      
+      - artifacts/data_ingestion/metadata.json
   data_validation:
     cmd: python src/churn/pipelines/pip_02_data_validation.py
-    
-    deps: 
+    deps:
       - src/churn/pipelines/pip_02_data_validation.py
       - config/config.yaml
       - artifacts/data_ingestion/web_churn.csv
-  
     outs:
       - artifacts/data_validation/status.json
 
-  data_transformation:
-    cmd: python src/churn/pipelines/pip_03_data_transformation.py
-
-    deps: 
-      - src/churn/pipelines/pip_03_data_transformation.py
-      - config/config.yaml
-      #- artifacts/data_validation/status.json 
-
-    outs:
-      - artifacts/data_transformation/preprocessor_obj.joblib
-      - artifacts/data_transformation/X_train_transformed.joblib
-      - artifacts/data_transformation/X_val_transformed.joblib
-      - artifacts/data_transformation/X_test_transformed.joblib
-      - artifacts/data_transformation/y_train.csv
-      - artifacts/data_transformation/y_val.csv
-      - artifacts/data_transformation/y_test.csv
-
   model_training:
     cmd: python src/churn/pipelines/pip_04_model_trainer.py
-
-    deps: 
+    deps:
       - src/churn/pipelines/pip_04_model_trainer.py
       - config/config.yaml
-      - artifacts/data_transformation/X_train_transformed.joblib
-      - artifacts/data_transformation/y_train.csv
 
-    params: 
-      - boosting_type
-      - max_depth
-      - learning_rate
-      - n_estimators
-      - objective
-      - min_split_gain
-      - min_child_weight
-      - subsample
-      - colsample_bytree
-      - reg_alpha
-      - reg_lambda
-      - random_state
-      - min_child_samples
-
-   
     outs:
       - artifacts/model_trainer/model.joblib
-      
+  model_evaluation:
+    cmd: python src/churn/pipelines/pip_05_model_evaluation.py
+    deps:
+      - src/churn/pipelines/pip_05_model_evaluation.py
+      - config/config.yaml
+      - artifacts/model_trainer/model.joblib
+      - artifacts/data_transformation/y_val.csv
+      - artifacts/data_transformation/X_val_transformed.joblib
+    outs:
+      - artifacts/model_evaluation/metrics.json
+      - artifacts/model_evaluation/pr_curve.png
+      - artifacts/model_evaluation/roc_curve.png
+  model_validation:
+    cmd: python src/churn/pipelines/pip_06_model_validation.py
+    deps:
+      - src/churn/pipelines/pip_06_model_validation.py
+      - config/config.yaml
+      - artifacts/data_transformation/X_test_transformed.joblib
+      - artifacts/data_transformation/y_test.csv
+    outs:
+      - artifacts/model_validation/metrics.json
+      - artifacts/model_validation/pr_curve.png
+      - artifacts/model_validation/roc_curve.png

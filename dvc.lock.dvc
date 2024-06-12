@@ -1,0 +1,5 @@
+outs:
+- md5: d41ee33d5aa3082447dc441e664f0943
+  size: 3971
+  hash: md5
+  path: dvc.lock

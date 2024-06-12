@@ -20,11 +20,12 @@ class ModelTrainerPipeline:
         X_train, X_val, X_test, y_train, y_val, y_test = data_transformation.train_val_test_splitting()
 
         # Unpack the transformed data
-        X_train_transformed, X_val_transformed, X_test_transformed, y_train_transformed, y_val_transformed, y_test_transformed,_ = data_transformation.initiate_data_transformation(
+        X_train_transformed, X_val_transformed, X_test_transformed, y_train_transformed, y_val_transformed, y_test_transformed, _ = data_transformation.initiate_data_transformation(
             X_train, X_val, X_test, y_train, y_val, y_test)
         
         model_trainer = ModelTrainer(config=model_trainer_config)
         model_trainer.initiate_model_trainer(X_train_transformed, X_val_transformed, y_train_transformed, y_val_transformed)
+    
 
 
 if __name__ == "__main__":

@@ -4,6 +4,13 @@ from pathlib import Path
 from src.churn.entity.config_entity import (DataIngestionConfig, DataValidationConfig, DataTransformationConfig,
                                             ModelTrainerConfig, ModelEvaluationConfig, ModelValidationConfig)
 
+# mlflow 
+import dagshub
+import mlflow
+mlflow.set_tracking_uri("https://dagshub.com/minich-code/churn.mlflow")
+dagshub.init(repo_owner='minich-code', repo_name='churn', mlflow=True)
+
+
 
 # Creating a ConfigurationManager class to manage configurations
 class ConfigurationManager:
@@ -75,12 +82,14 @@ class ConfigurationManager:
         config = self.config.model_trainer
         params = self.params.LGBMClassifier
         create_directories([config.root_dir])
+
         # Create and return the Model Trainer Config object
         model_trainer_config = ModelTrainerConfig(
             root_dir=config.root_dir,
             train_data_path=config.train_data_path,
             val_data_path=config.val_data_path,
             model_name=config.model_name,
+
             # LGBMClassifier hyperparameters
             boosting_type=params['boosting_type'],
             max_depth=params['max_depth'],
@@ -95,11 +104,15 @@ class ConfigurationManager:
             reg_lambda=params['reg_lambda'],
             random_state=params['random_state'],
             min_child_samples=params['min_child_samples'],
+
+            # mlflow 
+            mlflow_uri= config.mlflow_uri
         )
         return model_trainer_config
 
-# Model Evaluation Config
 
+
+# Model Evaluation Config
     def get_model_evaluation_config(self) -> ModelEvaluationConfig:
         config = self.config.model_evaluation
         params = self.params.LGBMClassifier  # Update to LGBMClassifier parameters
@@ -115,29 +128,35 @@ class ConfigurationManager:
             all_params=params,
             metric_file_name=config.metric_file_name,
             target_column=schema.name,
+            # mlflow 
+            mlflow_uri= config.mlflow_uri
         )
 
         return model_evaluation_config
     
+
 # Model Validation
-
     def get_model_validation_config(self) -> ModelValidationConfig:
-            config = self.config.model_validation
-            params = self.params.LGBMClassifier  # Ensure correct parameter usage
-            schema = self.schema.TARGET_COLUMN
+        config = self.config.model_validation
+        params = self.params.LGBMClassifier  # Ensure correct parameter usage
+        schema = self.schema.TARGET_COLUMN
 
-            create_directories([config.root_dir])
+        create_directories([config.root_dir])
 
-            model_validation_config = ModelValidationConfig(
-                root_dir=config.root_dir,
-                model_path=config.model_path,
-                test_data_path=config.test_data_path,
-                test_target_variable=config.test_target_variable,
-                metric_file_name=config.metric_file_name,
-                target_column=schema.name  
-            )
+        model_validation_config = ModelValidationConfig(
+            root_dir=config.root_dir,
+            model_path=config.model_path,
+            test_data_path=config.test_data_path,
+            test_target_variable=config.test_target_variable,
+            metric_file_name=config.metric_file_name,
+            target_column=schema.name, # Set target_column
 
-            return model_validation_config
+            # mlflow 
+            mlflow_uri= config.mlflow_uri
+
+        )
+
+        return model_validation_config
         
     
 

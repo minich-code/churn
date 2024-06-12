@@ -11,6 +11,12 @@ from lightgbm import LGBMClassifier
 from src.churn.utils.commons import save_json
 from src.churn.config.configuration import ModelValidationConfig
 
+# mlflow 
+import dagshub
+import mlflow
+mlflow.set_tracking_uri("https://dagshub.com/minich-code/churn.mlflow")
+dagshub.init(repo_owner='minich-code', repo_name='churn', mlflow=True)
+
 
 class ModelValidation:
     def __init__(self, config: ModelValidationConfig):
@@ -108,3 +114,18 @@ class ModelValidation:
         # Plot ROC and Precision-Recall curves
         self.plot_roc_curve(y_test, y_pred_proba)
         self.plot_pr_curve(y_test, y_pred_proba)
+
+        # Log metrics and artifacts in MLflow
+        with mlflow.start_run(run_name="Model_Validation"):
+            mlflow.log_metric("Accuracy", accuracy)
+            mlflow.log_metric("Precision", precision)
+            mlflow.log_metric("Recall", recall)
+            mlflow.log_metric("F1_Score", f1)
+            mlflow.log_metric("ROC_AUC", roc_auc)
+            mlflow.log_metric("PR_AUC", pr_auc)
+
+            # Log artifacts
+            mlflow.log_artifact(os.path.join(
+                self.config.root_dir, 'roc_curve.png'))
+            mlflow.log_artifact(os.path.join(
+                self.config.root_dir, 'pr_curve.png'))

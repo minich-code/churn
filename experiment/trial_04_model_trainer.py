@@ -14,6 +14,12 @@ from experiment.trial_03_data_transformation import DataTransformationConfig
 from experiment.trial_03_data_transformation import DataTransformation
 
 
+# mlflow 
+import dagshub
+import mlflow
+mlflow.set_tracking_uri("https://dagshub.com/minich-code/churn.mlflow")
+dagshub.init(repo_owner='minich-code', repo_name='churn', mlflow=True)
+
 # Entity 
 @dataclass
 class ModelTrainerConfig:
@@ -35,6 +41,8 @@ class ModelTrainerConfig:
     reg_lambda: float
     random_state: int
     min_child_samples: int
+    # mlflow
+    mlflow_uri: str
 
 # Class for the configuration manager 
 class ConfigurationManager:
@@ -72,6 +80,7 @@ class ConfigurationManager:
             train_data_path=config.train_data_path,
             val_data_path=config.val_data_path,
             model_name=config.model_name,
+
             # LGBMClassifier hyperparameters
             boosting_type=params['boosting_type'],
             max_depth=params['max_depth'],
@@ -86,6 +95,11 @@ class ConfigurationManager:
             reg_lambda=params['reg_lambda'],
             random_state=params['random_state'],
             min_child_samples=params['min_child_samples'],
+
+            # mlflow 
+            mlflow_uri= config.mlflow_uri,
+
+            
         )
         return model_trainer_config
     
@@ -95,6 +109,26 @@ class ModelTrainer:
         self.config = config
 
     def initiate_model_trainer(self, X_train_transformed, X_val_transformed, y_train, y_val):
+
+        # mlflow.start_run(nested=True): - check readme.md
+        # Start an MLflow run
+        with mlflow.start_run(run_name="LGBM_Training"):  # Set a run name for clarity
+            mlflow.log_param("boosting_type", self.config.boosting_type)
+            mlflow.log_param("max_depth", self.config.max_depth)
+            mlflow.log_param("learning_rate", self.config.learning_rate)
+            mlflow.log_param("n_estimators", self.config.n_estimators)
+            mlflow.log_param("objective", self.config.objective)
+            mlflow.log_param("min_split_gain", self.config.min_split_gain)
+            mlflow.log_param("min_child_weight", self.config.min_child_weight)
+            mlflow.log_param("subsample", self.config.subsample)
+            mlflow.log_param("colsample_bytree", self.config.colsample_bytree)
+            mlflow.log_param("reg_alpha", self.config.reg_alpha)
+            mlflow.log_param("reg_lambda", self.config.reg_lambda)
+            mlflow.log_param("random_state", self.config.random_state)
+            mlflow.log_param("min_child_samples", self.config.min_child_samples)
+
+            # mlflow.log_param("model_name", self.config.model_name)
+        
         lgbm_model = LGBMClassifier(
             boosting_type=self.config.boosting_type,
             max_depth=self.config.max_depth,
@@ -118,7 +152,7 @@ class ModelTrainer:
         
         # Perform Stratified K-Fold Cross-Validation
         fold_f1_scores = []
-        for train_index, val_index in skf.split(X_train_transformed, y_train):
+        for fold, (train_index, val_index) in enumerate (skf.split(X_train_transformed, y_train)):
             X_train_fold, X_val_fold = X_train_transformed[train_index], X_train_transformed[val_index]
             y_train_fold, y_val_fold = y_train.iloc[train_index], y_train.iloc[val_index]
             
@@ -132,24 +166,51 @@ class ModelTrainer:
             fold_f1 = f1_score(y_val_fold, y_val_pred, average='macro')
             fold_f1_scores.append(fold_f1)
             print(f"Fold Validation Macro F1-Score: {fold_f1}")
-        
+
+            # Log fold-specific metrics in MLflow
+            mlflow.log_metric("fold_f1_score", fold_f1, step=fold)
+
+            
         # Print average Macro F1-Score across all folds
-        print(f"Average Cross-Validation Macro F1-Score: {sum(fold_f1_scores) / len(fold_f1_scores)}")
+        avg_f1 = sum(fold_f1_scores) / len(fold_f1_scores)
+        print(f"Average Cross-Validation Macro F1-Score: {avg_f1}")
+
+        # Log average F1 in MLflow
+        mlflow.log_metric("avg_f1_score", avg_f1)
 
         # Final training on full training set
         lgbm_model.fit(X_train_transformed, y_train)
-        
-        joblib.dump(lgbm_model, os.path.join(self.config.root_dir, self.config.model_name))
+
+
+        # Save the model
+        model_path = os.path.join(self.config.root_dir, self.config.model_name)
+        joblib.dump(lgbm_model, model_path)
+
+        # Log model artifact in MLflow
+        #mlflow.log_artifact(os.path.join(self.config.root_dir, self.config.model_name))
+
+        # End the MLflow run from the training 
+        mlflow.end_run()
+
+        # Start an MLflow run specifically for registration
+        with mlflow.start_run(run_name="Register_Model_Run"):
+            
+            # Log the trained model with MLflow
+            mlflow.sklearn.log_model(lgbm_model, "model")  # Use mlflow.sklearn.log_model for convenience
+            mlflow.log_artifact(model_path)  # Log the model artifact
+
+            # Register the model in MLflow
+            mlflow.register_model(
+                "runs:/" + mlflow.active_run().info.run_id + "/model", "MyLGBMModel" 
+            )
+
+            # End the MLflow run
+            mlflow.end_run()        
+
         # Logging info 
-        logging.info(f"Model Trainer completed: Saved to {os.path.join(self.config.root_dir, self.config.model_name)}")
+        logging.info(f"Model Trainer completed: Saved to {model_path}")
 
-        # Validate on the separate validation set
-        y_val_pred = lgbm_model.predict(X_val_transformed)
-        print(f"Validation Set Classification Report:\n {classification_report(y_val, y_val_pred)}")
-        print(f"Validation Set Confusion Matrix:\n {confusion_matrix(y_val, y_val_pred)}")
-
-
-
+        
 
 if __name__ == "__main__":
     try:
@@ -161,13 +222,14 @@ if __name__ == "__main__":
         X_train, X_val, X_test, y_train, y_val, y_test = data_transformation.train_val_test_splitting()
 
         # Unpack the transformed data
-        X_train_transformed, X_val_transformed, X_test_transformed, y_train_transformed, y_val_transformed, y_test_transformed = data_transformation.initiate_data_transformation(
+        X_train_transformed, X_val_transformed, X_test_transformed, y_train_transformed, y_val_transformed, y_test_transformed, _ = data_transformation.initiate_data_transformation(
             X_train, X_val, X_test, y_train, y_val, y_test)
         
         model_trainer = ModelTrainer(config=model_trainer_config)
         model_trainer.initiate_model_trainer(X_train_transformed, X_val_transformed, y_train_transformed, y_val_transformed)
     
     except Exception as e:
+        mlflow.end_run()  # Ensure the run is ended in case of an exception
         raise e
 
 

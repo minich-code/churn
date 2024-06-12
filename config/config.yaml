@@ -76,6 +76,7 @@ model_trainer:
   #y_train_data_path: artifacts/data_transformation/y_train_arr.npy
   #y_test_data_path: artifacts/data_transformation/y_test_arr.npy
   model_name: model.joblib
+  mlflow_uri: https://dagshub.com/minich-code/churn.mlflow
 
 
 model_evaluation:
@@ -84,6 +85,7 @@ model_evaluation:
   test_target_variable: artifacts\data_transformation\y_val.csv
   model_path: artifacts/model_trainer/model.joblib
   metric_file_name: artifacts/model_evaluation/metrics.json
+  mlflow_uri: https://dagshub.com/minich-code/churn.mlflow
 
 model_validation: 
   
@@ -92,3 +94,4 @@ model_validation:
   test_data_path: artifacts\data_transformation\X_test_transformed.joblib
   test_target_variable: artifacts\data_transformation\y_test.csv
   metric_file_name: artifacts/model_validation/metrics.json
+  mlflow_uri: https://dagshub.com/minich-code/churn.mlflow

@@ -5,8 +5,8 @@ stages:
     deps:
     - path: config/config.yaml
       hash: md5
-      md5: 40eaa7a67db82d4a8f8ec0da2f8e5224
-      size: 2750
+      md5: be61c1e2f74ce0ae63af5b385189bc4a
+      size: 2930
     - path: src/churn/pipelines/pip_01_data_ingestion.py
       hash: md5
       md5: 86f224219c686a005f2e181faab9bf85
@@ -14,7 +14,7 @@ stages:
     outs:
     - path: artifacts/data_ingestion/metadata.json
       hash: md5
-      md5: e3e06ddd8ad7b51175f21c42526780b6
+      md5: 60db1479de050da7d0f3adf39d35556f
       size: 211
     - path: artifacts/data_ingestion/web_churn.csv
       hash: md5
@@ -29,8 +29,8 @@ stages:
       size: 7689980
     - path: config/config.yaml
       hash: md5
-      md5: 40eaa7a67db82d4a8f8ec0da2f8e5224
-      size: 2750
+      md5: be61c1e2f74ce0ae63af5b385189bc4a
+      size: 2930
     - path: src/churn/pipelines/pip_02_data_validation.py
       hash: md5
       md5: cc74359fd79e152d0409353251943ef9
@@ -45,12 +45,12 @@ stages:
     deps:
     - path: config/config.yaml
       hash: md5
-      md5: 40eaa7a67db82d4a8f8ec0da2f8e5224
-      size: 2750
+      md5: be61c1e2f74ce0ae63af5b385189bc4a
+      size: 2930
     - path: src/churn/pipelines/pip_04_model_trainer.py
       hash: md5
-      md5: 07e2c9dbd718013040d202bd08e67fe2
-      size: 1658
+      md5: c65df317bd24f238ca2a249c5debfa83
+      size: 1665
     outs:
     - path: artifacts/model_trainer/model.joblib
       hash: md5
@@ -73,8 +73,8 @@ stages:
       size: 1023708
     - path: config/config.yaml
       hash: md5
-      md5: 40eaa7a67db82d4a8f8ec0da2f8e5224
-      size: 2750
+      md5: be61c1e2f74ce0ae63af5b385189bc4a
+      size: 2930
     - path: src/churn/pipelines/pip_05_model_evaluation.py
       hash: md5
       md5: 2cc80ff688bbceeb140870083c52ff0c
@@ -105,8 +105,8 @@ stages:
       size: 16665
     - path: config/config.yaml
       hash: md5
-      md5: 40eaa7a67db82d4a8f8ec0da2f8e5224
-      size: 2750
+      md5: be61c1e2f74ce0ae63af5b385189bc4a
+      size: 2930
     - path: src/churn/pipelines/pip_06_model_validation.py
       hash: md5
       md5: 54c0cc0397ce5a1a6a30de0072f36ce4

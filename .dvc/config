@@ -1,0 +1,5 @@
+[core]
+    autostage = true
+    remote = mylocalstorage
+['remote "mylocalstorage"']
+    url = E:\MLprojects\dvc-storage

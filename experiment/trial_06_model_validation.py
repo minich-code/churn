@@ -11,6 +11,16 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from sklearn.preprocessing import label_binarize
 from lightgbm import LGBMClassifier
 
+import mlflow
+import dagshub
+
+# mlflow 
+import dagshub
+import mlflow
+mlflow.set_tracking_uri("https://dagshub.com/minich-code/churn.mlflow")
+dagshub.init(repo_owner='minich-code', repo_name='churn', mlflow=True)
+
+
 # Configuration class to store paths and parameters
 @dataclass
 class ModelValidationConfig:
@@ -20,6 +30,8 @@ class ModelValidationConfig:
     test_target_variable: Path
     metric_file_name: Path
     target_column: str  # Add target_column attribute
+    # mlflow
+    mlflow_uri: str
 
 class ConfigurationManager:
     def __init__(self, config_filepath=CONFIG_FILE_PATH, params_filepath=PARAMS_FILE_PATH, schema_filepath=SCHEMA_FILE_PATH):
@@ -41,7 +53,11 @@ class ConfigurationManager:
             test_data_path=config.test_data_path,
             test_target_variable=config.test_target_variable,
             metric_file_name=config.metric_file_name,
-            target_column=schema.name  # Set target_column
+            target_column=schema.name, # Set target_column
+
+            # mlflow 
+            mlflow_uri= config.mlflow_uri
+
         )
 
         return model_validation_config
@@ -143,6 +159,21 @@ class ModelValidation:
         # Plot ROC and Precision-Recall curves
         self.plot_roc_curve(y_test, y_pred_proba)
         self.plot_pr_curve(y_test, y_pred_proba)
+
+        # Log metrics and artifacts in MLflow
+        with mlflow.start_run(run_name="Model_Validation"):
+            mlflow.log_metric("Accuracy", accuracy)
+            mlflow.log_metric("Precision", precision)
+            mlflow.log_metric("Recall", recall)
+            mlflow.log_metric("F1_Score", f1)
+            mlflow.log_metric("ROC_AUC", roc_auc)
+            mlflow.log_metric("PR_AUC", pr_auc)
+
+            # Log artifacts
+            mlflow.log_artifact(os.path.join(
+                self.config.root_dir, 'roc_curve.png'))
+            mlflow.log_artifact(os.path.join(
+                self.config.root_dir, 'pr_curve.png'))
 
 if __name__ == "__main__":
     try:

@@ -154,7 +154,7 @@ class DataTransformation:
             logging.info("Data Transformation process has completed")
 
             # Return
-            return X_train_transformed, X_val_transformed, X_test_transformed, y_train, y_val, y_test #, preprocessor_path
+            return X_train_transformed, X_val_transformed, X_test_transformed, y_train, y_val, y_test, preprocessor_path
 
         except Exception as e:
             raise e

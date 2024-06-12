@@ -5,6 +5,12 @@ from pymongo import MongoClient
 import pandas as pd
 import os 
 
+# mlflow 
+import dagshub
+import mlflow
+mlflow.set_tracking_uri("https://dagshub.com/minich-code/churn.mlflow")
+dagshub.init(repo_owner='minich-code', repo_name='churn', mlflow=True)
+
 
 # Data Ingestion entity 
 @dataclass
@@ -56,6 +62,8 @@ class ModelTrainerConfig:
     reg_lambda: float
     random_state: int
     min_child_samples: int
+    # mlflow
+    mlflow_uri: str
 
 # Model Evaluation Entity
 
@@ -68,6 +76,8 @@ class ModelEvaluationConfig:
     all_params: dict
     metric_file_name: Path
     target_column: str
+    # mlflow
+    mlflow_uri: str
 
 
 # Model Validation
@@ -78,5 +88,6 @@ class ModelValidationConfig:
     test_data_path: Path
     test_target_variable: Path
     metric_file_name: Path
-    target_column: str  
-
+    target_column: str  # Add target_column attribute
+    # mlflow
+    mlflow_uri: str

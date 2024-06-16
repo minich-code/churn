@@ -19,6 +19,9 @@ ipykernel
 pip-chill==1.0.1
 LightGBM
 category_encoders
+requests
+Flask-Mail
+
 
 # mlflow 
 mlflow

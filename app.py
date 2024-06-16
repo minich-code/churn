@@ -1,5 +1,7 @@
-from flask import Flask, request, render_template
-import os 
+from flask import Flask, request, jsonify
+import pandas as pd
+import json
+from flask_mail import Mail, Message
 
 from src.churn.pipelines.pip_07_prediction_pipeline import CustomData, PredictionPipeline
 from src.churn.exception import FileOperationError
@@ -8,81 +10,101 @@ from src.churn import logging
 # Create a flask app
 app = Flask(__name__)
 
-# Route for homepage 
-@app.route('/')
-def home():
-    return render_template('home.html')
+# Mailtrap configuration
+app.config['MAIL_SERVER'] = 'bulk.smtp.mailtrap.io'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = 'api'
+app.config['MAIL_PASSWORD'] = '6d0d5e3485f30cbe048871e1b9c7c2c9'
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
 
-# Route for prediction
+mail = Mail(app)
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict_data_point():
-    if request.method == 'GET':
-        return render_template('index.html')
-    
-    else:
+    if request.method == 'POST':
         try:
-            # Initialize an empty dictionary to store the data
-            form_data = {}
+            # Debug statement to check if the request has files
+            if 'csv_file' not in request.files:
+                logging.error("No csv_file key in request.files")
+                return jsonify({"error": "No file part in the request"}), 400
 
-            # Iterate over the form fields and populate the dictionary
-            for field in [  'age'  
-                            'gender',
-                            'region_category',
-                            'membership_category',
-                            'joined_through_referral',
-                            'preferred_offer_types',
-                            'internet_option',
-                            'Recency',
-                            'avg_time_spent',
-                            'Monetary', 
-                            'Frequency',
-                            'points_in_wallet', 
-                            'used_special_discount',
-                            'offer_application_preference',
-                            'past_complaint',
-                            'complaint_status',
-                            'feedback',
-                            'churn_risk_score',
-                            'medium_of_operation',
-                            'tenure_months',
-                            'visit_hour',
-                            'Login-Spend Ratio',
-                            'Login-Transaction Ratio', 
-            ]:
-                form_data[field] = request.form.get(field)
+            csv_file = request.files['csv_file']
 
+            # Check if a file was uploaded
+            if csv_file.filename == '':
+                logging.error("No selected file")
+                return jsonify({"error": "No file selected"}), 400
 
-            # Create an instance of the CustomData class
-            custom_data = CustomData(**form_data)
+            # Read the CSV data into a Pandas DataFrame
+            df = pd.read_csv(csv_file)
 
-            # Convert the form data dictionary to a dataframe 
+            # Select the first row for prediction
+            first_row = df.iloc[1]
+
+            # Convert the first row to a dictionary
+            first_row_data = first_row.to_dict()
+
+            # Create CustomData instance from the first row data
+            custom_data = CustomData(**first_row_data)
+
+            # Get data as a DataFrame (or use the existing df directly if needed)
             pred_df = custom_data.get_data_as_dataframe()
 
-            # Print the dataframe for debugging 
-            print(pred_df)
+            # Log the data for debugging
+            logging.info(f"Data received for prediction: {first_row_data}")
 
-            # Log message 
-            logging.info(f"Form data before prediction: {form_data}")
-
-            # Initialize the prediction pipeline 
+            # Initialize prediction pipeline
             prediction_pipeline = PredictionPipeline()
 
-             # Get the prediction 
+            # Get the prediction 
             prediction = prediction_pipeline.make_predictions(pred_df)
 
-            # Return results 
-            return render_template('prediction.html', prediction=prediction[0])
-        
+            # Send email based on prediction
+            send_email(prediction[0])
+
+            # Return prediction as JSON
+            return jsonify({"prediction": prediction[0]})
         except Exception as e:
             logging.exception(e)
-            #raise FileOperationError(e)
-            return render_template('predict.html', error_message="Please enter valid numbers for all fields.")
-        
+            return jsonify({"error": "An error occurred during prediction."}), 500  # Return error code 500
+    else:
+        return '''
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <title>Churn Prediction</title>
+            </head>
+            <body>
+              <h1>Churn Prediction</h1>
+              <form method="POST" action="/predict" enctype="multipart/form-data"> 
+                <input type="file" name="csv_file" accept=".csv">
+                <button type="submit">Predict</button>
+              </form>
+            </body>
+            </html>
+        '''
+
+def send_email(prediction):
+    # Choose email content based on prediction category
+    if prediction == 2:
+        subject = "Your Subscription is Safe!"
+        text = "We are happy to inform you that your subscription is in good standing."
+    elif prediction == 1:
+        subject = "Subscription Renewal Alert"
+        text = "Your subscription is nearing renewal. Please take the necessary actions."
+    else:
+        subject = "Subscription Cancellation Warning"
+        text = "We noticed some issues with your subscription. Please contact support."
+
+    # Create a message object
+    msg = Message(subject, sender='mailtrap@demomailtrap.com', recipients=['minichworks@gmail.com'])
+    msg.body = text
+
+    # Send email using Mailtrap
+    with app.app_context():
+        mail.send(msg)
 
 # Run the flask app 
-
 if __name__ == '__main__':
-    app.run(host = "0.0.0.0", port=8080, debug=True)
-
-    
+    app.run(host="0.0.0.0", port=8080, debug=True)

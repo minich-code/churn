@@ -31,6 +31,9 @@ class PredictionPipeline:
             # Make predictions
             predictions = model.predict(features_transformed)
 
+            # Convert NumPy int64 to Python int (for JSON serialization)
+            predictions = [int(pred) for pred in predictions] 
+
             return predictions
         except Exception as e:
             raise FileOperationError(e, sys)
